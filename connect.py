@@ -1,29 +1,6 @@
 from netmiko import ConnectHandler
 from datetime import datetime
-
-routers = [
-    {
-        'device_type': 'cisco_ios', #R2
-        'host': '10.10.10.200',
-        'username': 'maya',
-        'password': 'cisco',
-        'global_cmd_verify': False,
-    },
-    {
-        'device_type': 'cisco_ios', #R1
-        'host': '10.10.11.201',
-        'username': 'elliot',
-        'password': 'cisco',
-        'global_cmd_verify': False,
-    },
-    {
-        'device_type': 'cisco_ios', #R3
-        'host': '10.10.13.201',
-        'username': 'malliot',
-        'password': 'cisco',
-        'global_cmd_verify': False,
-    },
-]
+from devices import routers
 
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 filename = f'network_inventory_{timestamp}.txt'
