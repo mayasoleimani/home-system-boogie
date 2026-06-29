@@ -11,8 +11,13 @@ This project is designed to practice my networking and cloud knowledge by creati
 
 ### Phases
 * Phase 1: Setup network topology in GNS3. Confirm connection from GNS3 domain to network on local PC using ping and SSH. Write Netmiko script to automate configuration tasks like VLAN setup, interface setup, etc. Additionally, setup Github repository to track project process
-* Phase 2: Cloud Networking
-* Phase 3: Monitoring
+* Phase 2: Cloud Networking and monitoring
+
+#### Network Architecture (phase 1)
+<img src="network_diagram.png"  width="50%">
+
+#### Cloud Architecture (phase 2)
+<img src="home_system_cloud_architecture.png"  width="50%">
 
 
 ### Troubleshooting:
