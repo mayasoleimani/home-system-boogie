@@ -28,11 +28,11 @@ Phase 2: Cloud Networking and monitoring
 #### Diagrams
 Network Architecture (phase 1)
 
-<img src="phase1-gns3/network_diagram.png"  width="50%">
+<img src="phase1_gns3/network_diagram.png"  width="50%">
 
 Cloud Architecture (phase 2)
 
-<img src="phase2-aws/home_system_cloud_architecture.png"  width="50%">
+<img src="phase2_aws/home_system_cloud_architecture.png"  width="50%">
 
 
 ### Results
@@ -40,25 +40,25 @@ CPU usage:
 
 Values fluctuated between 1% and 1.15% with a noticeable spike at 17:30 UTC (10:30 AM PDT) daily, reaching 1.3% of CPU usage. Using the journalctl command on the EC2 instance, I was able to find: "Jun 26 17:30:01 ip-10-0-2-215.ec2.internal CROND[14983]: (root) CMD (/usr/lib64/sa/sa1 1 1)". This is the "System Activity Reporter", part of the sysstat package (Linux monitoring utility) that runs on a cron schedule to collect system performance data.
 
-<img src="phase2-aws/grafana-output/CPU Usage.png"  width="50%">
+<img src="phase2_aws/grafana-output/CPU Usage.png"  width="50%">
 
 Memory Usage:
 
 Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage include node-exporter, ninginx, OS, Grafana, and Prometheus. The EC2 instance is t2.micro, which comes with 1GB of RAM, so about 500MB was being occupied by everything runnning on it (node-exporter, OS, Grafana, nginx, Prometheus). Likely the most hungry application is prometheus, which keeps recent data in memory before writing to disk.
 
-<img src="phase2-aws/grafana-output/Memory Usage.png"  width="50%">
+<img src="phase2_aws/grafana-output/Memory Usage.png"  width="50%">
 
 Network Input:
 
 Values had two distinct values: 42.07 and 42.31 bytes per second. This can be best explained by the traffic.sh script being run on the bastion host that has a fixed run time of every 2 seconds. The lower value seen on the diagram is that script running, where the spike happens is most likely AWS health checks.
 
-<img src="phase2-aws/grafana-output/Network Input.png"  width="50%">
+<img src="phase2_aws/grafana-output/Network Input.png"  width="50%">
 
 Network Output:
 
 Values fluctuated between 788.6 and 790.2 bytes per sec. These values most likely come from the responses from nginx.
 
-<img src="phase2-aws/grafana-output/Network Output.png"  width="50%">
+<img src="phase2_aws/grafana-output/Network Output.png"  width="50%">
 
 
 ### How to run
