@@ -9,6 +9,7 @@ This project is designed to practice my networking and cloud knowledge by creati
 * Terraform
 * Prometheus
 * Grafana
+* Docker
 
 ### Phases
 Phase 1: Creating a network
@@ -44,13 +45,13 @@ Values fluctuated between 1% and 1.15% with a noticeable spike at 17:30 UTC (10:
 
 Memory Usage:
 
-Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage include node-exporter, ninginx, OS, Grafana, and Prometheus. The EC2 instance is t2.micro, which comes with 1GB of RAM, so about 500MB was being occupied by everything runnning on it (node-exporter, OS, Grafana, nginx, Prometheus). Likely the most hungry application is prometheus, which keeps recent data in memory before writing to disk.
+Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage include node-exporter, nginx, OS, Grafana, and Prometheus. The EC2 instance is t2.micro, which comes with 1GB of RAM, so about 500MB was being occupied by everything runnning on it (node-exporter, OS, Grafana, nginx, Prometheus). Likely the most hungry application is prometheus, which keeps recent data in memory before writing to disk.
 
 <img src="phase2_aws/grafana-output/Memory Usage.png"  width="50%">
 
 Network Input:
 
-Values had two distinct values: 42.07 and 42.31 bytes per second. This can be best explained by the traffic.sh script being run on the bastion host that has a fixed run time of every 2 seconds. The lower value seen on the diagram is that script running, where the spike happens is most likely AWS health checks.
+Values had two distinct values: 42.07 and 42.31 bytes per second. This can be best explained by the traffic.sh script being run on the bastion host that has a fixed scrape interval of 15 seconds (seen in prometheus.yml). The lower value seen on the diagram is that script running, where the spike happens represents Prometheus scraping intervals
 
 <img src="phase2_aws/grafana-output/Network Input.png"  width="50%">
 
@@ -60,6 +61,7 @@ Values fluctuated between 788.6 and 790.2 bytes per sec. These values most likel
 
 <img src="phase2_aws/grafana-output/Network Output.png"  width="50%">
 
+Overall: Determing whether the infrastructure performed well or not, we have to revisit a few values. For memory, even though it was able to handle all 4 docker containers at around 51% of capacity being occupied, this wouldn't allow for adequate expanansion in the future, atleast if there's no scaling of the instances as an option.
 
 ### How to run
 
@@ -69,7 +71,32 @@ In a GNS3 new project, follow the topology from diagram 1. Keep in mind you'll h
 
 Phase 2:
 
-For phase 2, you will need an AWS account setup. In my case, I opted for the free resources as much as I could but wound up spending about $10 in resources for the EC2 instances, the VPC, and the internet gateway.
+1. You will need a few prerequisites including an AWS account, Terraform, and AWS CLI installed.. In my case for AWS resources, I opted for the free resources as much as I could but wound up spending about $10 in resources for the EC2 instances, the VPC, and the internet gateway.
+2. Create your terraform file with the following resources (see main.tf):
+   
+* VPC with CIDR 10.0.0.0/16, DNS hostnames enabled
+* Public subnet 10.0.1.0/24 in us-east-1a
+* Private subnet 10.0.2.0/24 in us-east-1a
+* Internet Gateway attached to VPC
+* Public route table with default route to internet gateway
+* Route table association for public subnet
+* Security group for bastion (SSH from anywhere on port 22)
+* Security group for private instance (SSH from bastion only)
+* NAT Gateway with Elastic IP (later removed to save costs)
+* Private route table pointing to NAT Gateway
+* SSH key pair using locally generated RSA key
+* Bastion EC2 instance (t2.micro, Amazon Linux 2, public subnet)
+* Private EC2 instance (t2.micro, Amazon Linux 2, private subnet)
+
+When you're done, run 'terraform plan' to confirm the resources and then 'terraform apply' to launch.
+
+3. Create SSH keys on your terminal and then confirm SSH into the bastion host on the public subnet. Then confirm SSH connection into private instance. Verify access to internet with pings to a website (ie: www.google.com)
+
+4. While connected to private instance, download Docker and Docker Compose. See docker-compose.yml file for nginx, Grafana, Prometheus, node-exporter services setup. Run docker-compose up -d command to start the containers.
+
+5. On the bastion host in the public subnet, create traffic.sh. Run with 'nohup' so script continues running even after being disconnected from SSH.
+
+6. Setup Grafana: Run SSH tunnel to start up grafana. Once running, open http://127.0.0.1:3000 in your browser. Here you will create the dashboard tracking the metrics that will be monitored over the course of a week.
 
 
 ### Troubleshooting:
