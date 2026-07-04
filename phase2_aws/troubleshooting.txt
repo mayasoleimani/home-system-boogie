@@ -1,0 +1,49 @@
+Roadblocks I encountered when working through phase 2 of the project.
+
+1. Prereqs: Unable to perform 'terraform init'. Had to disable ipv6 on my wifi adapter in my Windows settings in order to allow.
+
+3. SSH running on Windows failing to remember my private keys, had to use Set-Service and Start-Service:
+
+
+
+Commands used:
+
+step 1:
+aws configure
+aws sts get-caller-identity
+terraform init
+
+step 2:
+terraform plan
+terraform apply
+
+step 3:
+ssh-keygen -t rsa -b 2048 -f "C:\your\path\here\homelab-key"
+Set-Service -Name ssh-agent -StartupType Manual
+Start-Service ssh-agent
+ssh-add "C:\your\path\here\homelab-key"
+ssh -A -i "C:\your\path\here\homelab-key" ec2-user@pu.bli.c.ip
+ssh ec2-user@pr.iv.ate.ip
+
+step 4:
+sudo yum update -y
+sudo amazon-linux-extras install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose up -d
+
+step 5:
+nohup ./simulate_traffic.sh &
+
+step 6:
+ssh -i "C:\your\path\here\homelab-key" -L 3000:pr.iv.ate.ip:3000 -N ec2-user@pu.bli.c.ip
+CPU Usage %: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+Memory Usage %: l100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)
+Network Traffic In (bytes/s): rate(node_network_receive_bytes_total{device="eth0"}[5m])
+Network Traffic Out (bytes/s): rate(node_network_transmit_bytes_total{device="eth0"}[5m])
+terraform destroy -target="aws_nat_gateway.main" -target="aws_eip.nat"
+
+step 7:
+terraform destroy
