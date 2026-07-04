@@ -45,13 +45,13 @@ Values fluctuated between 1% and 1.15% with a noticeable spike at 17:30 UTC (10:
 
 Memory Usage:
 
-Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage include node-exporter, nginx, OS, Grafana, and Prometheus. The EC2 instance is t2.micro, which comes with 1GB of RAM, so about 500MB was being occupied by everything runnning on it (node-exporter, OS, Grafana, nginx, Prometheus). Likely the most hungry application is prometheus, which keeps recent data in memory before writing to disk.
+Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage include node-exporter, nginx, OS, Grafana, and Prometheus. The EC2 instance is t2.micro, which comes with 1GB of RAM, so about 500MB was being occupied by everything running on it (node-exporter, OS, Grafana, nginx, Prometheus). Likely the most hungry application is prometheus, which keeps recent data in memory before writing to disk.
 
 <img src="phase2_aws/grafana-output/Memory Usage.png"  width="50%">
 
 Network Input:
 
-Values had two distinct values: 42.07 and 42.31 bytes per second. This can be best explained by the traffic.sh script being run on the bastion host that has a fixed scrape interval of 15 seconds (seen in prometheus.yml). The lower value seen on the diagram is that script running, where the spike happens represents Prometheus scraping intervals
+output had two distinct values: 42.07 and 42.31 bytes per second. Network input represents traffic coming into the private instance. The baseline of 42.07 bytes/sec reflects the consistent stream of HTTP requests arriving from the traffic simulation script running on the bastion host. The periodic spikes to 42.31 bytes/sec likely reflects AWS internal health checks or scheduled Docker/OS maintenance tasks running on that interval.
 
 <img src="phase2_aws/grafana-output/Network Input.png"  width="50%">
 
@@ -61,13 +61,13 @@ Values fluctuated between 788.6 and 790.2 bytes per sec. These values most likel
 
 <img src="phase2_aws/grafana-output/Network Output.png"  width="50%">
 
-Overall: Determing whether the infrastructure performed well or not, we have to revisit a few values. For memory, even though it was able to handle all 4 docker containers at around 51% of capacity being occupied, this wouldn't allow for adequate expanansion in the future, atleast if there's no scaling of the instances as an option.
+Overall: Determining whether the infrastructure performed well or not, we have to revisit a few values. For memory, even though it was able to handle all 4 Docker containers at around 51% of capacity, this wouldn't allow for adequate expansion in the future, at least without scaling the instance. The most significant finding however was the CPU spike — monitoring revealed a daily anomaly at 17:30 UTC that was traced via system logs to a scheduled Linux process (/usr/lib64/sa/sa1), the System Activity Reporter from the sysstat package. This demonstrates the core value of monitoring: without Prometheus and Grafana running continuously, this pattern would have gone unnoticed and could have been mistaken for an application issue in a more complex environment.
 
 ### How to run
 
 Phase 1:
 
-In a GNS3 new project, follow the topology from diagram 1. Keep in mind you'll have to obtain images from Cisco or another source for the routers and switch. SSH will also have to be configured on the devices before attempting to connect to them using the automation script. In the environment of your choosing run router_config.py and switch_config.py from the phase1-gns3 folder. And bam, you just configured cisco devices via SSH using a Python script with a Netmiko library.
+In a GNS3 new project, follow the topology from diagram 1. Keep in mind you'll have to obtain images from Cisco or another source for the routers and switch, which honestly, setting this up was the biggest hurdle of phase 1 and these two setup items took several days alone. After that, it is simply creating the configuration scripts and having successful SSH connections. SSH will also have to be configured on the devices before attempting to connect to them using the automation script. You can find the switch and router config files in the phase1-gns3 folder. In the environment of your choosing, run router_config.py and switch_config.py from the phase1-gns3 folder. And bam, you just configured cisco devices via SSH using a Python script with a Netmiko library.
 
 Phase 2:
 
@@ -81,7 +81,7 @@ Phase 2:
 * Public route table with default route to internet gateway
 * Route table association for public subnet
 * Security group for bastion (SSH from anywhere on port 22)
-* Security group for private instance (SSH from bastion only)
+* Security group for private instance (SSH from bastion only + Grafana + Prometheus allowed ingress)
 * NAT Gateway with Elastic IP (later removed to save costs)
 * Private route table pointing to NAT Gateway
 * SSH key pair using locally generated RSA key
@@ -96,20 +96,12 @@ When you're done, run 'terraform plan' to confirm the resources and then 'terraf
 
 5. On the bastion host in the public subnet, create traffic.sh. Run with 'nohup' so script continues running even after being disconnected from SSH.
 
-6. Setup Grafana: Run SSH tunnel to start up grafana. Once running, open http://127.0.0.1:3000 in your browser. Here you will create the dashboard tracking the metrics that will be monitored over the course of a week.
+6. Setup Grafana: Run SSH tunnel to start up grafana. Once running, open http://127.0.0.1:3000 in your browser. Add Prometheus as a data source (http://prometheus:9090). Create the dashboard and add the 4 panels, each with its own queries to show the metrics that will be monitored over the course of a week. You can find the queries used in the troubleshooting.txt file.
+
+*Here is the point where you can destroy your NAT gateway by removing it from your terraform file, since the cost is approximately $1 per day and we want to eliminate unnecessary AWS costs as much as possible*
+
+7. Allow time to pass (For this project, it was 5 days) to gather data on the system's behavior while traffic.sh runs.
+
+8. To maintain lowest cost, destroy all AWS resources.
 
 
-### Troubleshooting:
-
-Phase 1:
-I was having  trouble trying to ping my local terminal from the router inside GNS3. I tried using every ethernet adapter my computer had to offer but nothing was working. Finally, I followed this guide on the official GNS3 website (https://www.gns3.com/community/support/can-t-ping-local-pc-to-gns3-usin) which instructed me to uninstall ncap and download winpcap 4.1.3. After doing this, I had successful pings and was able to SSH into the terminal on my local machine.
-
-When I put the project down and come back to it, I ping the routers from my terminal to check my connection. Often when it's been a while since I worked on the project and come back, I do not get successful pings. The solution to this was restarting GNS3.
-
-Regular SSH command is not working on my PC terminal, had to add some parameters:
-ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -oHostKeyAlgorithms=+ssh-rsa -oCiphers=+aes128-cbc -oMACs=+hmac-sha1 maya@172.16.10.10
-
-Phase 2:
-Since every resource I'm using from AWS is trying to utilize the free tier, it is imperative to tear down the nat gateway after only needing it to let the private instance pull Docker images.
-
-Permission denied (publickey,gssapi-keyex,gssapi-with-mic). = need to add the key to the agent
