@@ -1,10 +1,9 @@
 Roadblocks I encountered when working through phase 2 of the project.
 
-1. Prereqs: Unable to perform 'terraform init'. Had to disable ipv6 on my wifi adapter in my Windows settings in order to allow.
-
-3. SSH running on Windows failing to remember my private keys, had to use Set-Service and Start-Service:
-
-
+* Prereqs: Unable to perform 'terraform init'. Had to disable ipv6 on my wifi adapter in my Windows settings in order to allow.
+* Permission denied (publickey,gssapi-keyex,gssapi-with-mic). = need to add the key to the agent
+* SSH running on Windows failing to remember my private keys, had to use Set-Service and Start-Service:
+* Grafana wouldn't boot without NAT gateway (expensive). Had to add rules to security group for the private instance to allow not only SSH, but also  Grafana and Prometheus ports from within the VPC (10.0.0.0/16). 
 
 Commands used:
 

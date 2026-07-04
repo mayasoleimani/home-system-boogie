@@ -102,7 +102,7 @@ resource "aws_security_group" "bastion" {
 # Security Group for Private Instance
 resource "aws_security_group" "private" {
   name        = "private-sg"
-  description = "Allow SSH from bastion only"
+  description = "Allow SSH from bastion only and Grafana plus Prometheus"
   vpc_id      = aws_vpc.main.id
 
   ingress {
