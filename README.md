@@ -20,7 +20,7 @@ Phase 1: Creating a network
 * Use Netmiko to Write automation script to create configuration tasks like VLAN setup, interface setup, etc.
 
 Phase 2: Cloud Networking and monitoring
-* Setup cloud infrastructure using Terraform including internet gateway private server, public server, vpc
+* Setup cloud infrastructure using Terraform including internet gateway, private server, public server, vpc
 * Establish docker containers on private server for prometheus, grafana, and node exporter connection
 * Create faux traffic to run on bastion host in public subnet. This will be scraped by Prometheus.
 * Create panels in Grafana using prometheus as a data source with queries that display metrics like CPU usage, memory usage, network traffic
