@@ -71,7 +71,7 @@ In a GNS3 new project, follow the topology from diagram 1. Keep in mind you'll h
 
 Phase 2:
 
-1. You will need a few prerequisites including an AWS account, Terraform, and AWS CLI installed.. In my case for AWS resources, I opted for the free resources as much as I could but wound up spending about $10 in resources for the EC2 instances, the VPC, and the internet gateway.
+1. You will need a few prerequisites including an AWS account, Terraform, and AWS CLI installed. In my case for AWS resources, I opted for the free resources as much as I could but ended up spending about $10 in resources for the EC2 instances, the VPC, and the internet gateway.
 2. Create your terraform file with the following resources (see main.tf):
    
 * VPC with CIDR 10.0.0.0/16, DNS hostnames enabled
@@ -102,6 +102,6 @@ When you're done, run 'terraform plan' to confirm the resources and then 'terraf
 
 7. Allow time to pass (For this project, it was 5 days) to gather data on the system's behavior while traffic.sh runs.
 
-8. To maintain lowest cost, destroy all AWS resources.
+8. To maintain lowest cost, destroy all AWS resources after finishing observations.
 
 
