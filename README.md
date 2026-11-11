@@ -51,7 +51,7 @@ Values fluctuated between 51.15% and 51.6% usage. Resources taking up this usage
 
 Network Input:
 
-output had two distinct values: 42.07 and 42.31 bytes per second. Network input represents traffic coming into the private instance. The baseline of 42.07 bytes/sec reflects the consistent stream of HTTP requests arriving from the traffic simulation script running on the bastion host. The periodic spikes to 42.31 bytes/sec likely reflects AWS internal health checks or scheduled Docker/OS maintenance tasks running on that interval.
+Output had two distinct values: 42.07 and 42.31 bytes per second. Network input represents traffic coming into the private instance. The baseline of 42.07 bytes/sec reflects the consistent stream of HTTP requests arriving from the traffic simulation script running on the bastion host. The periodic spikes to 42.31 bytes/sec likely reflects AWS internal health checks or scheduled Docker/OS maintenance tasks running on that interval.
 
 <img src="phase2_aws/grafana-output/Network Input.png"  width="50%">
 
